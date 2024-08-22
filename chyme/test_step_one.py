@@ -1,5 +1,5 @@
-import logging
 import os
+import sys
 
 import pytest
 import vcr
@@ -14,66 +14,63 @@ from chyme.step_one import (
     process_emails,
 )
 
-# Enable VCR debug logging
-logging.basicConfig(level=logging.DEBUG)
-vcr_log = logging.getLogger("vcr")
-vcr_log.setLevel(logging.DEBUG)
-
 # Ensure the cassette directory exists
 cassette_dir = "tests/fixtures/vcr_cassettes"
 os.makedirs(cassette_dir, exist_ok=True)
 
+def scrub_request(request):
+    if 'authorization' in request.headers:
+        del request.headers['authorization']
+    return request
+
+def scrub_response(response):
+    if 'set-cookie' in response['headers']:
+        del response['headers']['set-cookie']
+    return response
+
 # Set up VCR
 vcr_instance = vcr.VCR(
     cassette_library_dir=cassette_dir,
-    record_mode=RecordMode.NEW_EPISODES,
-    match_on=["uri", "method"],
+    record_mode=RecordMode.ONCE,
+    match_on=['uri', 'method', 'body'],
+    filter_headers=['authorization', 'cookie'],
     decode_compressed_response=True,
-    filter_headers=["authorization"],
+    serializer='yaml',
+    path_transformer=vcr.VCR.ensure_suffix('.yaml'),
+    before_record_request=scrub_request,
+    before_record_response=scrub_response,
 )
 
 load_dotenv()
 
 # Test data
-TEST_USERNAME = os.environ["TEST_EMAIL_USERNAME"]
-TEST_PASSWORD = os.environ["TEST_EMAIL_PASSWORD"]
-TEST_RECEIVING_EMAIL = os.environ["TEST_RECEIVING_EMAIL"]
+TEST_USERNAME = os.environ.get("TEST_EMAIL_USERNAME")
+TEST_PASSWORD = os.environ.get("TEST_EMAIL_PASSWORD")
+TEST_RECEIVING_EMAIL = os.environ.get("TEST_RECEIVING_EMAIL")
 
+if not all([TEST_USERNAME, TEST_PASSWORD, TEST_RECEIVING_EMAIL]):
+    print("Error: Missing required environment variables.")
+    sys.exit(1)
 
-@vcr_instance.use_cassette()
+@vcr_instance.use_cassette(path='tests/fixtures/vcr_cassettes/test_connect_to_email.yaml')
 def test_connect_to_email():
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
     assert mail is not None
     assert mail.state == "AUTH"
 
-
-@vcr_instance.use_cassette()
+@vcr_instance.use_cassette(path='tests/fixtures/vcr_cassettes/test_fetch_emails.yaml')
 def test_fetch_emails():
-    print(f"Connecting to email with username: {TEST_USERNAME}")
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
-    print(f"Connected to email. Server response: {mail.welcome}")
-    
-    print(f"Fetching emails for: {TEST_RECEIVING_EMAIL}")
     emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
-    print(f"Fetched {len(emails)} emails")
-    
     assert isinstance(emails, list)
     assert len(emails) > 0, "No emails were fetched"
-    
-    print("Email subjects:")
-    for email in emails[:5]:  # Print first 5 email subjects
-        print(f"- {email['Subject']}")
-
 
 def test_get_body():
-    # Test with a simple email message
     from email.message import EmailMessage
-
     msg = EmailMessage()
     msg.set_content("This is a test email body.")
     body = get_body(msg)
     assert body == "This is a test email body."
-
 
 def test_clean_email_body():
     dirty_body = "Hello World! http://example.com Click here to Unsubscribe"
@@ -82,8 +79,7 @@ def test_clean_email_body():
     assert "http://" not in clean_body
     assert "unsubscribe" not in clean_body
 
-
-@vcr_instance.use_cassette()
+@vcr_instance.use_cassette(path='tests/fixtures/vcr_cassettes/test_process_emails.yaml')
 def test_process_emails():
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
     emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
@@ -92,6 +88,5 @@ def test_process_emails():
     assert len(processed) > 0
     assert all("subject" in email and "body" in email for email in processed)
 
-
 if __name__ == "__main__":
-    pytest.main()
+    pytest.main([__file__, "-v"])
