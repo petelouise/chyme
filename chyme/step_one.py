@@ -1,16 +1,11 @@
 import email
 import imaplib
+import os
 import re
 from email.header import decode_header
 from typing import Any
 
 from bs4 import BeautifulSoup
-
-# Email server credentials
-username = "her@petelouises.cloud"
-# password = "gvb*xra@jvf7XVX3jdh"
-password = "286l7u9h8n2z9j6l"  # App password for Fastmail
-receiving_email = "news@petelouises.cloud"
 
 
 def connect_to_email(username, password) -> imaplib.IMAP4_SSL:
@@ -20,7 +15,7 @@ def connect_to_email(username, password) -> imaplib.IMAP4_SSL:
     return mail
 
 
-def fetch_emails(mail, limit_emails=False) -> list[Any]:
+def fetch_emails(mail, receiving_email, limit_emails=False) -> list[Any]:
     # Select the mailbox (inbox)
     mail.select("inbox")
 
