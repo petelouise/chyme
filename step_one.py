@@ -19,13 +19,6 @@ def connect_to_email(username, password) -> imaplib.IMAP4_SSL:
     mail.login(username, password)
     return mail
 
-# For testing purposes
-if __name__ == "__main__":
-    mail = connect_to_email(username, password)
-    emails = fetch_emails(mail, limit_emails=True)
-    processed = process_emails(emails)
-    print(f"Processed {len(processed)} emails")
-
 
 def fetch_emails(mail, limit_emails=False) -> list[Any]:
     # Select the mailbox (inbox)
