@@ -3,6 +3,7 @@ import os
 import pytest
 import vcr
 from dotenv import load_dotenv
+from vcr.record_mode import RecordMode
 
 from chyme.step_one import (
     clean_email_body,
@@ -13,9 +14,9 @@ from chyme.step_one import (
 )
 
 # Set up VCR
-vcr = vcr.VCR(
+vcr_instance = vcr.VCR(
     cassette_library_dir="tests/fixtures/vcr_cassettes",
-    record_mode="new_episodes",
+    record_mode=RecordMode.NEW_EPISODES,
     match_on=["uri", "method"],
 )
 
@@ -27,14 +28,14 @@ TEST_PASSWORD = os.environ["TEST_EMAIL_PASSWORD"]
 TEST_RECEIVING_EMAIL = os.environ["TEST_RECEIVING_EMAIL"]
 
 
-@vcr.use_cassette()
+@vcr_instance.use_cassette()
 def test_connect_to_email():
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
     assert mail is not None
     assert mail.state == "AUTH"
 
 
-@vcr.use_cassette()
+@vcr_instance.use_cassette()
 def test_fetch_emails():
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
     emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
@@ -60,7 +61,7 @@ def test_clean_email_body():
     assert "unsubscribe" not in clean_body
 
 
-@vcr.use_cassette()
+@vcr_instance.use_cassette()
 def test_process_emails():
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
     emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
