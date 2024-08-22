@@ -1,8 +1,8 @@
 import os
 import sys
+
 import pytest
 from dotenv import load_dotenv
-from pytest_recording import recorder
 
 from chyme.step_one import (
     clean_email_body,
@@ -23,27 +23,30 @@ if not all([TEST_USERNAME, TEST_PASSWORD, TEST_RECEIVING_EMAIL]):
     print("Error: Missing required environment variables.")
     sys.exit(1)
 
-@pytest.mark.vcr(filter_headers=['authorization', 'cookie'])
-def test_connect_to_email(recorder):
-    with recorder.use_cassette('test_connect_to_email'):
-        mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
-        assert mail is not None
-        assert mail.state == "AUTH"
 
-@pytest.mark.vcr(filter_headers=['authorization', 'cookie'])
-def test_fetch_emails(recorder):
-    with recorder.use_cassette('test_fetch_emails'):
-        mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
-        emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
-        assert isinstance(emails, list)
-        assert len(emails) > 0, "No emails were fetched"
+@pytest.mark.vcr(filter_headers=["authorization", "cookie"])
+def test_connect_to_email():
+    mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
+    assert mail is not None
+    assert mail.state == "AUTH"
+
+
+@pytest.mark.vcr(filter_headers=["authorization", "cookie"])
+def test_fetch_emails():
+    mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
+    emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
+    assert isinstance(emails, list)
+    assert len(emails) > 0, "No emails were fetched"
+
 
 def test_get_body():
     from email.message import EmailMessage
+
     msg = EmailMessage()
     msg.set_content("This is a test email body.")
     body = get_body(msg)
     assert body == "This is a test email body."
+
 
 def test_clean_email_body():
     dirty_body = "Hello World! http://example.com Click here to Unsubscribe"
@@ -52,15 +55,12 @@ def test_clean_email_body():
     assert "http://" not in clean_body
     assert "unsubscribe" not in clean_body
 
-@pytest.mark.vcr(filter_headers=['authorization', 'cookie'])
-def test_process_emails(recorder):
-    with recorder.use_cassette('test_process_emails'):
-        mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
-        emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
-        processed = process_emails(emails)
-        assert isinstance(processed, list)
-        assert len(processed) > 0
-        assert all("subject" in email and "body" in email for email in processed)
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+@pytest.mark.vcr(filter_headers=["authorization", "cookie"])
+def test_process_emails():
+    mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
+    emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
+    processed = process_emails(emails)
+    assert isinstance(processed, list)
+    assert len(processed) > 0
+    assert all("subject" in email and "body" in email for email in processed)

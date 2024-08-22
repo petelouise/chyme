@@ -200,6 +200,25 @@ pluggy = ">=1.5,<2"
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-recording"
+version = "0.13.2"
+description = "A pytest plugin that allows you recording of network interactions via VCR.py"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_recording-0.13.2-py3-none-any.whl", hash = "sha256:3820fe5743d1ac46e807989e11d073cb776a60bdc544cf43ebca454051b22d13"},
+    {file = "pytest_recording-0.13.2.tar.gz", hash = "sha256:000c3babbb466681457fd65b723427c1779a0c6c17d9e381c3142a701e124877"},
+]
+
+[package.dependencies]
+pytest = ">=3.5.0"
+vcrpy = ">=2.0.1"
+
+[package.extras]
+dev = ["pytest-httpbin", "pytest-mock", "requests", "werkzeug (==3.0.3)"]
+tests = ["pytest-httpbin", "pytest-mock", "requests", "werkzeug (==3.0.3)"]
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -507,4 +526,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c87e767b895c558a31a2e859e4f4a4d228bb8f62e1dac017b8da9dbd97a0f6ac"
+content-hash = "e2d45b87a33afaa5973bb5ce63e6f9cb433d7aab7e5bb1fac8a9c39caa713b00"
