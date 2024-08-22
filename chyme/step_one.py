@@ -58,7 +58,7 @@ def get_body(msg) -> str | None:
             text = msg.get_payload(decode=True).decode()  # Fallback for any other types
     else:
         text = msg.get_payload(decode=True).decode()
-    return text
+    return text.strip() if text else None
 
 
 def clean_email_body(body) -> str:

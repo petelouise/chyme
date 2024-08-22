@@ -52,7 +52,7 @@ def test_fetch_emails(email_credentials):
     emails = fetch_emails(mail, email_credentials["receiving_email"], limit_emails=True)
     assert isinstance(emails, list)
     assert len(emails) > 0
-    assert all(isinstance(email, email.message.Message) for email in emails)
+    assert all(isinstance(email, email.message.EmailMessage) for email in emails)
     mail.logout()
 
 def test_get_body():
