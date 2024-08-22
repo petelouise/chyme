@@ -1,6 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+
 from chyme.step_one import connect_to_email, fetch_emails, process_emails
+
+load_dotenv()
 
 
 def main(username, password, receiving_email) -> None:
@@ -17,10 +21,6 @@ def main(username, password, receiving_email) -> None:
 
 
 if __name__ == "__main__":
-    from dotenv import load_dotenv
-
-    load_dotenv()
-
     # Email server credentials
     username = os.getenv("EMAIL_USERNAME")
     password = os.getenv("EMAIL_PASSWORD")
