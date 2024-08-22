@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pytest
@@ -13,11 +14,22 @@ from chyme.step_one import (
     process_emails,
 )
 
+# Enable VCR debug logging
+logging.basicConfig(level=logging.DEBUG)
+vcr_log = logging.getLogger("vcr")
+vcr_log.setLevel(logging.DEBUG)
+
+# Ensure the cassette directory exists
+cassette_dir = "tests/fixtures/vcr_cassettes"
+os.makedirs(cassette_dir, exist_ok=True)
+
 # Set up VCR
 vcr_instance = vcr.VCR(
-    cassette_library_dir="tests/fixtures/vcr_cassettes",
+    cassette_library_dir=cassette_dir,
     record_mode=RecordMode.NEW_EPISODES,
     match_on=["uri", "method"],
+    decode_compressed_response=True,
+    filter_headers=["authorization"],
 )
 
 load_dotenv()
