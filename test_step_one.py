@@ -65,6 +65,3 @@ def test_process_emails():
     assert isinstance(processed, list)
     assert len(processed) > 0
     assert all('subject' in email and 'body' in email for email in processed)
-
-if __name__ == "__main__":
-    pytest.main()
