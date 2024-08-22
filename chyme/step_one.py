@@ -1,11 +1,13 @@
 import email
 import imaplib
-import os
+import logging
 import re
 from email.header import decode_header
 from typing import Any
 
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 def connect_to_email(username, password) -> imaplib.IMAP4_SSL:
@@ -16,30 +18,30 @@ def connect_to_email(username, password) -> imaplib.IMAP4_SSL:
 
 
 def fetch_emails(mail, receiving_email, limit_emails=False) -> list[Any]:
-    print(f"Selecting inbox")
+    logger.debug("Selecting inbox")
     mail.select("inbox")
 
-    print(f"Searching for emails to: {receiving_email}")
+    logger.debug(f"Searching for emails to: {receiving_email}")
     _status, messages = mail.search(None, "TO", receiving_email)
     email_ids = messages[0].split()
-    print(f"Found {len(email_ids)} email IDs")
+    logger.debug(f"Found {len(email_ids)} email IDs")
 
     if limit_emails:
         email_ids = email_ids[-10:]
-        print(f"Limiting to last 10 emails")
+        logger.debug("Limiting to last 10 emails")
 
     emails = []
     for e_id in email_ids:
-        print(f"Fetching email ID: {e_id}")
+        logger.debug(f"Fetching email ID: {e_id}")
         status, msg_data = mail.fetch(e_id, "(RFC822)")
-        if status != 'OK':
-            print(f"Error fetching email ID {e_id}: {status}")
+        if status != "OK":
+            logger.debug(f"Error fetching email ID {e_id}: {status}")
             continue
         raw_email = msg_data[0][1]
         msg = email.message_from_bytes(raw_email)
         emails.append(msg)
-    
-    print(f"Successfully fetched {len(emails)} emails")
+
+    logger.debug(f"Successfully fetched {len(emails)} emails")
     return emails
 
 
@@ -60,7 +62,7 @@ def get_body(msg) -> str | None:
                 soup = BeautifulSoup(html, "html.parser")
                 for script in soup(["script", "style"]):
                     script.decompose()  # Remove scripts and styles
-                text = ' '.join(soup.stripped_strings)
+                text = " ".join(soup.stripped_strings)
         if not text:
             text = msg.get_payload(decode=True).decode()  # Fallback for any other types
     else:
