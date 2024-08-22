@@ -49,10 +49,20 @@ def test_connect_to_email():
 
 @vcr_instance.use_cassette()
 def test_fetch_emails():
+    print(f"Connecting to email with username: {TEST_USERNAME}")
     mail = connect_to_email(TEST_USERNAME, TEST_PASSWORD)
+    print(f"Connected to email. Server response: {mail.welcome}")
+    
+    print(f"Fetching emails for: {TEST_RECEIVING_EMAIL}")
     emails = fetch_emails(mail, TEST_RECEIVING_EMAIL, limit_emails=True)
+    print(f"Fetched {len(emails)} emails")
+    
     assert isinstance(emails, list)
-    assert len(emails) > 0
+    assert len(emails) > 0, "No emails were fetched"
+    
+    print("Email subjects:")
+    for email in emails[:5]:  # Print first 5 email subjects
+        print(f"- {email['Subject']}")
 
 
 def test_get_body():

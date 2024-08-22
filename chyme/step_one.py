@@ -16,23 +16,30 @@ def connect_to_email(username, password) -> imaplib.IMAP4_SSL:
 
 
 def fetch_emails(mail, receiving_email, limit_emails=False) -> list[Any]:
-    # Select the mailbox (inbox)
+    print(f"Selecting inbox")
     mail.select("inbox")
 
-    # Search for all emails
+    print(f"Searching for emails to: {receiving_email}")
     _status, messages = mail.search(None, "TO", receiving_email)
     email_ids = messages[0].split()
+    print(f"Found {len(email_ids)} email IDs")
 
     if limit_emails:
         email_ids = email_ids[-10:]
+        print(f"Limiting to last 10 emails")
 
-    # Fetch all emails for testing purposes
     emails = []
     for e_id in email_ids:
+        print(f"Fetching email ID: {e_id}")
         status, msg_data = mail.fetch(e_id, "(RFC822)")
+        if status != 'OK':
+            print(f"Error fetching email ID {e_id}: {status}")
+            continue
         raw_email = msg_data[0][1]
         msg = email.message_from_bytes(raw_email)
         emails.append(msg)
+    
+    print(f"Successfully fetched {len(emails)} emails")
     return emails
 
 
