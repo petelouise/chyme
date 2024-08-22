@@ -53,7 +53,7 @@ def get_body(msg) -> str | None:
                 soup = BeautifulSoup(html, "html.parser")
                 for script in soup(["script", "style"]):
                     script.decompose()  # Remove scripts and styles
-                text = soup.get_text(separator=' ', strip=True)
+                text = ' '.join(soup.stripped_strings)
         if not text:
             text = msg.get_payload(decode=True).decode()  # Fallback for any other types
     else:
