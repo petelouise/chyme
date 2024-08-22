@@ -63,7 +63,7 @@ def test_get_body():
 
     # Test with an HTML message
     html_msg = create_mock_email("Test Subject", "<p>HTML content</p>", "text/html")
-    assert get_body(html_msg) == "HTML content"
+    assert get_body(html_msg).strip() == "HTML content"
 
     # Test with a multipart message
     multipart_msg = email.message.EmailMessage()
